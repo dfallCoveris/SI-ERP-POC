@@ -1,0 +1,83 @@
+# Tryton — environnement de POC
+#
+# Trois services : PostgreSQL, le serveur Tryton (trytond) et le planificateur.
+# Aucun port de base de données n'est publié sur l'hôte.
+# Le serveur n'écoute que sur 127.0.0.1 : l'accès se fait par le reverse proxy
+# interne, lui-même joignable uniquement depuis le tunnel WireGuard.
+#
+# Versions épinglées, jamais latest. Voir docs/fiches/ pour la fiche de référence.
+
+name: erppoc-tryton
+
+services:
+
+  postgres:
+    image: postgres:${POSTGRES_TAG}
+    container_name: erppoc-tryton-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - interne
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  trytond:
+    image: tryton/tryton:${TRYTON_TAG}
+    container_name: erppoc-tryton-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOSTNAME: postgres
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      TRYTOND_DATABASE__URI: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/
+    ports:
+      # Publié sur la boucle locale uniquement.
+      - "127.0.0.1:${HTTP_PORT}:8000"
+    volumes:
+      - app-data:/var/lib/trytond
+    networks:
+      - interne
+    restart: unless-stopped
+
+  cron:
+    image: tryton/tryton:${TRYTON_TAG}
+    container_name: erppoc-tryton-cron
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: trytond-cron -d ${DB_NAME}
+    environment:
+      DB_HOSTNAME: postgres
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      TRYTOND_DATABASE__URI: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/
+    volumes:
+      - app-data:/var/lib/trytond
+    networks:
+      - interne
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  app-data:
+
+networks:
+  interne:
+    name: erppoc-tryton
+    ipam:
+      config:
+        # Sous-réseau à confirmer : vérifier qu'il n'entre pas en conflit
+        # avec un réseau existant (docker network inspect).
+        - subnet: ${DOCKER_SUBNET}

@@ -46,3 +46,6 @@ node_modules/
 # Java / Axelor
 target/
 *.class
+
+# Sauvegardes locales des environnements
+sauvegardes/
