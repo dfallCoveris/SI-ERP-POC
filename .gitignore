@@ -1,0 +1,48 @@
+# Secrets — ne jamais committer
+.env
+*.env
+!.env.example
+*.key
+*.pem
+*.p12
+secrets/
+credentials*
+
+# Sauvegardes et dumps
+*.sql
+*.dump
+*.bak
+backups/
+*.tar.gz
+*.tgz
+*.zip
+
+# Volumes et données d'exécution
+volumes/
+data/
+sites/
+logs/
+*.log
+
+# Système
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Éditeurs
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node
+node_modules/
+
+# Java / Axelor
+target/
+*.class
