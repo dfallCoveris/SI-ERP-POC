@@ -10,6 +10,30 @@ Format : une entrée par décision, la plus récente en haut.
 
 ---
 
+## 2026-09-17 — Jeu de données de test construit sur la structure réelle
+
+**Contexte.** Le POC doit s'appuyer sur un jeu de données comparable entre les quatre
+ERP. La question était de savoir s'il fallait l'inventer ou partir de l'existant.
+
+**Décision.** Données fictives (noms, montants), structure réelle (nomenclature des
+postes de dépense, circuit de validation, logique des sociétés, régimes de TVA).
+Aucune donnée réelle sur les environnements de test.
+
+**Sources.** Extractions Kalitics anonymisées du 16/09 et réponses métier du 17/09.
+
+**Conséquences.**
+- Le jeu de données reprend les 20 postes de dépense réels et leur correspondance
+  comptable.
+- Trois écarts entre le cadrage initial et le fonctionnement réel sont identifiés et
+  consignés dans `tests/common/jeu-de-donnees.md`, section 11 : validation par lots
+  non souhaitée par le métier, facturation électronique déjà en production,
+  détermination du second valideur selon le contexte.
+- Le périmètre des tests 10.3 (lettrage) et 10.7 (TVA) est élargi.
+- Les échanges métier contenant des noms de personnes ne sont pas versés dans le
+  dépôt.
+
+---
+
 ## 2026-09-17 — Découpage cible du serveur : une seule VM de production
 
 **Contexte.** Le serveur `debian2018` devient hôte de virtualisation. La question du
